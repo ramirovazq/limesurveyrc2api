@@ -7,6 +7,46 @@ class _Token(object):
     def __init__(self, api):
         self.api = api
 
+    def export_responses_by_token(
+            self, 
+            survey_id, 
+            document_type="json", 
+            token=""
+            ):
+        """
+        Add participants to the specified survey.
+
+        Parameters
+        :param survey_id: ID of survey to delete participants from.
+        :type survey_id: Integer
+        :param participant_data: List of participant detail dictionaries.
+        :type participant_data: List[Dict]
+        :param create_token_key: If True, generate the new token instead of
+          using a provided value.
+        :type create_token_key: Bool
+        """
+        method = "export_responses_by_token"
+        params = OrderedDict([
+            ("sSessionKey", self.api.session_key),
+            ("iSurveyID", survey_id),
+            ("sDocumentType", document_type),
+            ("sToken", token)
+        ])
+        response = self.api.query(method=method, params=params)
+        response_type = type(response)
+
+        if response_type is dict and "status" in response:
+            status = response["status"]
+            error_messages = [
+                "Error: Invalid survey ID",
+                "No token table",
+                "No permission"
+            ]
+            for message in error_messages:
+                if status == message:
+                    raise LimeSurveyError(method, status)
+        return response
+
     def add_participants(
             self, survey_id, participant_data, create_token_key=True):
         """
